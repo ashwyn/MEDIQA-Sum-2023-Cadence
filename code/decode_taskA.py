@@ -13,14 +13,14 @@ VAL_MODE=False
 # In[3]:
 
 
-val_filename = '../data/MEDIQA-Chat-Training-ValidationSets-Feb-10-2023/TaskA/TaskA-ValidationSet.csv'
+val_filename = '../data/2023_ImageCLEFmed_Mediqa-main/dataset/TaskA/TaskA-ValidationSet.csv'
 
 
 # In[4]:
 
 
 # Pass as CLI arg
-# test_filename = '../data/MEDIQA-Chat-TestSets-March-15-2023/TaskA/taskA_testset4participants_inputConversations.csv'
+# test_filename = '../data/2023_ImageCLEFmed_Mediqa-main/dataset/TaskA/taskA_testset4participants_headers_inputConversations.csv'
 test_filename = sys.argv[1]
 
 
@@ -33,63 +33,14 @@ if VAL_MODE:
 
 print(f'Test input filename:{test_filename}\n')
 
-# In[6]:
-
-
-model_path = '../taskA-summ-rouge_51_21'
-
 
 # In[7]:
 
 
-output_filename = './outputs/taskA_Cadence_run1.csv'
-
-
-# In[8]:
-
-
-temp_summarizer_output_filename = './outputs/temp/taskA-summarizer/summarizer-taskA_Cadence_run1.csv'
-
-
-# In[9]:
+output_filename = './outputs/taskA_Cadence_run1_mediqaSum.csv'
 
 
 temp_classifier_output_filename = './outputs/temp/taskA-classifier/classifier-taskA_Cadence_run1.csv'
-
-
-# In[10]:
-
-
-# Run prediction
-os.system(f'python3 ./run_summarization-taskA.py      --model_name_or_path {model_path}      --do_predict      --output_dir  ./outputs/temp/taskA-summarizer      --test_file  {test_filename}      --overwrite_output_dir      --predict_with_generate      --text_column dialogue      --save_strategy \"epoch\"      --generation_max_length 1024      --max_target_length 1024      --max_source_length 1024      --per_device_eval_batch_size 2')
-
-
-# In[11]:
-
-
-EXAMPLE_SEP = '\n###############END-PRED##################\n'
-
-
-# In[12]:
-
-
-summarizer_out_filename = './outputs/temp/taskA-summarizer/taskA_summarizer-generated_predictions.txt'
-
-
-# In[13]:
-
-
-summarizer_pred_out = ""
-
-with open(summarizer_out_filename, "r") as f:
-    for line in f.readlines():
-        summarizer_pred_out+=line
-        
-summarized_preds = summarizer_pred_out.split(EXAMPLE_SEP)
-print(f'Total summarized preds:{len(summarized_preds)}')
-
-
-# In[14]:
 
 
 import pandas as pd
@@ -104,34 +55,53 @@ val_df = read_csv(val_filename)
 val_df
 
 
-# In[16]:
-
-
-summarized_labels = list(val_df['section_text'])
-print(f'Total summarized labels:{len(summarized_labels)}')
-
-
-# In[17]:
-
 
 import evaluate 
 rouge = evaluate.load('rouge')
 
 
-# In[18]:
-
-
-if VAL_MODE:
-    result = rouge.compute(predictions=summarized_preds, references=summarized_labels, use_stemmer=True)
-    print(result)
-
-
-# In[19]:
-
-
 # Classification
-idx2label = {0: 'OTHER_HISTORY', 1: 'DISPOSITION', 2: 'ALLERGY', 3: 'PROCEDURES', 4: 'EXAM', 5: 'IMAGING', 6: 'PASTMEDICALHX', 7: 'MEDICATIONS', 8: 'LABS', 9: 'GYNHX', 10: 'EDCOURSE', 11: 'ASSESSMENT', 12: 'GENHX', 13: 'ROS', 14: 'IMMUNIZATIONS', 15: 'FAM/SOCHX', 16: 'PLAN', 17: 'PASTSURGICAL', 18: 'CC', 19: 'DIAGNOSIS'}
-label2idx = {'OTHER_HISTORY': 0, 'DISPOSITION': 1, 'ALLERGY': 2, 'PROCEDURES': 3, 'EXAM': 4, 'IMAGING': 5, 'PASTMEDICALHX': 6, 'MEDICATIONS': 7, 'LABS': 8, 'GYNHX': 9, 'EDCOURSE': 10, 'ASSESSMENT': 11, 'GENHX': 12, 'ROS': 13, 'IMMUNIZATIONS': 14, 'FAM/SOCHX': 15, 'PLAN': 16, 'PASTSURGICAL': 17, 'CC': 18, 'DIAGNOSIS': 19}
+idx2label = {0: 'PROCEDURES',
+ 1: 'OTHER_HISTORY',
+ 2: 'IMMUNIZATIONS',
+ 3: 'DIAGNOSIS',
+ 4: 'PASTMEDICALHX',
+ 5: 'PASTSURGICAL',
+ 6: 'LABS',
+ 7: 'ALLERGY',
+ 8: 'EDCOURSE',
+ 9: 'PLAN',
+ 10: 'FAM/SOCHX',
+ 11: 'GYNHX',
+ 12: 'DISPOSITION',
+ 13: 'MEDICATIONS',
+ 14: 'IMAGING',
+ 15: 'GENHX',
+ 16: 'ROS',
+ 17: 'ASSESSMENT',
+ 18: 'CC',
+ 19: 'EXAM'}
+
+label2idx = {'PROCEDURES': 0,
+ 'OTHER_HISTORY': 1,
+ 'IMMUNIZATIONS': 2,
+ 'DIAGNOSIS': 3,
+ 'PASTMEDICALHX': 4,
+ 'PASTSURGICAL': 5,
+ 'LABS': 6,
+ 'ALLERGY': 7,
+ 'EDCOURSE': 8,
+ 'PLAN': 9,
+ 'FAM/SOCHX': 10,
+ 'GYNHX': 11,
+ 'DISPOSITION': 12,
+ 'MEDICATIONS': 13,
+ 'IMAGING': 14,
+ 'GENHX': 15,
+ 'ROS': 16,
+ 'ASSESSMENT': 17,
+ 'CC': 18,
+ 'EXAM': 19}
 
 
 # In[20]:
@@ -144,15 +114,15 @@ test_df
 # In[21]:
 
 
-classifier_model_path = '../taskA-class-acc_79-f1_79'
+classifier_model_path = '../taskA-class-gpt3_5_augmented'
 
 from transformers import pipeline
-classifier = pipeline('text-classification', model=classifier_model_path)
+classifier = pipeline('text-classification', model=classifier_model_path, max_length=1024, truncation=True, padding=True)
 
 
 test_dialogues = list(test_df['dialogue'])
 
-classes_preds = classifier(test_dialogues )
+classes_preds = classifier(test_dialogues)
 
 classes_preds = [pred_result['label'] for pred_result in classes_preds]
 
@@ -186,8 +156,7 @@ id_column = 'TestID' if 'TestID' in test_df.columns else 'ID'
 
 
 taskA_out_df = test_df[[id_column]]
-taskA_out_df['SystemOutput1'] = classes_preds
-taskA_out_df['SystemOutput2'] = summarized_preds
+taskA_out_df['SystemOutput'] = classes_preds
 taskA_out_df.rename(columns={id_column:'TestID'}, inplace=True)
 taskA_out_df
 
@@ -202,4 +171,3 @@ taskA_out_df.to_csv(output_filename, index=False)
 
 
 print('Task A inference completed!')
-

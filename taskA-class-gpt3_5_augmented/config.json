@@ -1,11 +1,11 @@
 {
-  "_name_or_path": "./bart-large-samsum-inverse-textgen-taskC-genlen1024",
+  "_name_or_path": "facebook/bart-large",
   "activation_dropout": 0.1,
   "activation_function": "gelu",
   "add_bias_logits": false,
   "add_final_layer_norm": false,
   "architectures": [
-    "BartForConditionalGeneration"
+    "BartForSequenceClassification"
   ],
   "attention_dropout": 0.1,
   "bos_token_id": 0,
@@ -28,16 +28,50 @@
   "forced_eos_token_id": 2,
   "gradient_checkpointing": false,
   "id2label": {
-    "0": "LABEL_0",
-    "1": "LABEL_1",
-    "2": "LABEL_2"
+    "0": "PROCEDURES",
+    "1": "OTHER_HISTORY",
+    "2": "IMMUNIZATIONS",
+    "3": "DIAGNOSIS",
+    "4": "PASTMEDICALHX",
+    "5": "PASTSURGICAL",
+    "6": "LABS",
+    "7": "ALLERGY",
+    "8": "EDCOURSE",
+    "9": "PLAN",
+    "10": "FAM/SOCHX",
+    "11": "GYNHX",
+    "12": "DISPOSITION",
+    "13": "MEDICATIONS",
+    "14": "IMAGING",
+    "15": "GENHX",
+    "16": "ROS",
+    "17": "ASSESSMENT",
+    "18": "CC",
+    "19": "EXAM"
   },
   "init_std": 0.02,
   "is_encoder_decoder": true,
   "label2id": {
-    "LABEL_0": 0,
-    "LABEL_1": 1,
-    "LABEL_2": 2
+    "ALLERGY": 7,
+    "ASSESSMENT": 17,
+    "CC": 18,
+    "DIAGNOSIS": 3,
+    "DISPOSITION": 12,
+    "EDCOURSE": 8,
+    "EXAM": 19,
+    "FAM/SOCHX": 10,
+    "GENHX": 15,
+    "GYNHX": 11,
+    "IMAGING": 14,
+    "IMMUNIZATIONS": 2,
+    "LABS": 6,
+    "MEDICATIONS": 13,
+    "OTHER_HISTORY": 1,
+    "PASTMEDICALHX": 4,
+    "PASTSURGICAL": 5,
+    "PLAN": 9,
+    "PROCEDURES": 0,
+    "ROS": 16
   },
   "max_position_embeddings": 1024,
   "model_type": "bart",
@@ -46,6 +80,7 @@
   "num_beams": 4,
   "num_hidden_layers": 12,
   "pad_token_id": 1,
+  "problem_type": "single_label_classification",
   "scale_embedding": false,
   "task_specific_params": {
     "summarization": {
@@ -68,7 +103,7 @@
     }
   },
   "torch_dtype": "float32",
-  "transformers_version": "4.27.0.dev0",
+  "transformers_version": "4.27.1",
   "use_cache": true,
   "vocab_size": 50265
 }
